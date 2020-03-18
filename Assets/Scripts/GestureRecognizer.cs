@@ -49,7 +49,7 @@ public class GestureRecognizer : MonoBehaviour
     bool sthWasDetected;
 
     public OVRSkeleton skeleton;
-    public List<Transform> fingerBones;
+    public List<OVRBone> fingerBones;
 
     private bool RightHandIsInitialized = false;
 
@@ -114,35 +114,30 @@ public class GestureRecognizer : MonoBehaviour
         Gesture g = new Gesture();
         g.gestureName = gestureName;
 
-
-        Hand rightHand = Hands.Instance.RightHand;
-        if (rightHand == null)
+        
+        OVRSkeleton handSkeleton = HandsManager.Instance.RightHandSkeleton;
+        if (handSkeleton == null)
         {
             Debug.Log("NO RIGHT HAND FOUND");
             return;
         }
 
-
-        
-
-        Debug.Log("right hand found");
-        HandSkeleton handSkeleton = rightHand.Skeleton;
         int numBones = handSkeleton.Bones.Count;
         Debug.Log("num bones " + numBones);
-        fingerBones = new List<Transform>(handSkeleton.Bones);
+        fingerBones = new List<OVRBone>(handSkeleton.Bones);
 
 
 
         Debug.Log("[Bones]");
         List <Vector3> positions = new List<Vector3>();
-        foreach(Transform bone in fingerBones)
+        foreach(OVRBone bone in fingerBones)
         {
-            fingerRelativePos = handSkeleton.transform.InverseTransformPoint(bone.position);
+            fingerRelativePos = handSkeleton.transform.InverseTransformPoint(bone.Transform.position);
             positions.Add(fingerRelativePos);
 
             Debug.Log("[Bones] "+fingerRelativePos);
 
-            Instantiate(spherePrefab, bone.position, Quaternion.identity);
+            Instantiate(spherePrefab, bone.Transform.position, Quaternion.identity);
         }
 
         g.positionsPerFinger = positions;
@@ -152,22 +147,26 @@ public class GestureRecognizer : MonoBehaviour
     }
     private void FindRightHand()
     {
-        Hand _hand = Hands.Instance.RightHand;
-        if (_hand == null)
+
+        OVRSkeleton handSkeleton = HandsManager.Instance.RightHandSkeleton;
+        if (handSkeleton == null)
         {
+            Debug.Log("NO RIGHT HAND FOUND");
             return;
         }
 
-        hand = _hand.gameObject;
-        IList<Transform> bones = _hand.Skeleton.Bones;
+        
+
+        IList<OVRBone> bones = handSkeleton.Bones;
         int numBones = bones.Count();
         GameObject[] fin = new GameObject[numBones];
 
         for(int i = 0; i < bones.Count(); i++)
         {
-            fin[i] = bones[i].gameObject;
+            fin[i] = bones[i].Transform.gameObject;
         }
 
+        hand = HandsManager.Instance.RightHand.gameObject;
         fingers = fin;
         RightHandIsInitialized = true;
     }
