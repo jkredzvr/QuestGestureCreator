@@ -38,13 +38,14 @@ public class GestureRecognizer : MonoBehaviour
     [SerializeField]
     public List<Gesture> savedGestures = new List<Gesture>();
 
+    public List<GestureScriptableAsset> savedGestureAssets = new List<GestureScriptableAsset>();
+
     public float theresold = 1.0f;
     public GameObject spherePrefab;
 
     public UnityEvent onNothindDetected;
 
-    [HideInInspector]
-    public Gesture gestureDetected;
+    public GestureScriptableAsset gestureDetected;
     bool sthWasDetected;
 
     public OVRSkeleton skeleton;
@@ -73,7 +74,7 @@ public class GestureRecognizer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(!RightHandIsInitialized)
+        if (!RightHandIsInitialized)
         {
             FindRightHand();
             return;
@@ -81,14 +82,19 @@ public class GestureRecognizer : MonoBehaviour
 
         gestureDetected = Recognize();
 
-        gestureNameDetected = gestureDetected.gestureName;
+        if (gestureDetected == null)
+        {
+            return;
+        }
 
-        if (gestureDetected.Equals(new Gesture()) && sthWasDetected)
+        gestureNameDetected = gestureDetected.Name;
+
+        if (sthWasDetected)
         {
             sthWasDetected = false;
             onNothindDetected.Invoke();
         }
-        else if (!gestureDetected.Equals(new Gesture()))
+        else
         {
             sthWasDetected = true;
 
@@ -98,21 +104,7 @@ public class GestureRecognizer : MonoBehaviour
             {
                 tag.UpdateText(gestureNameDetected);
             }
-
-            gestureDetected.onRecognized.Invoke();
-
-            
         }
-    }
-
-    public void DebugNear()
-    {
-        Debug.Log("NEAR");
-    }
-
-    public void DebugProximity()
-    {
-        Debug.Log("Prox");
     }
 
     public void SaveAsGesture()
@@ -158,7 +150,6 @@ public class GestureRecognizer : MonoBehaviour
         savedGestures.Add(g);
 
     }
-
     private void FindRightHand()
     {
         Hand _hand = Hands.Instance.RightHand;
@@ -181,19 +172,19 @@ public class GestureRecognizer : MonoBehaviour
         RightHandIsInitialized = true;
     }
 
-    public Gesture Recognize()
+    public GestureScriptableAsset Recognize()
     {
         Vector3 fingerRelativePos;
         bool discardGesture = false;
         float sumDistances;
         float minSumDistances = Mathf.Infinity;
-        Gesture bestCandidate = new Gesture();
+        GestureScriptableAsset bestCandidate = null;
 
         // For each gesture
-        for (int i = 0; i < savedGestures.Count; i++)
+        for (int i = 0; i < savedGestureAssets.Count; i++)
         {
             // If the number of fingers does not match, it returns an error
-            if (fingers.Length != savedGestures[i].positionsPerFinger.Count) throw new Exception("Different number of tracked fingers");
+            if (fingers.Length != savedGestureAssets[i].FingerPositions.Count) throw new Exception("Different number of tracked fingers");
 
             sumDistances = 0f;
 
@@ -203,14 +194,14 @@ public class GestureRecognizer : MonoBehaviour
                 fingerRelativePos = hand.transform.InverseTransformPoint(fingers[j].transform.position);
 
                 // If at least one finger does not enter the theresold we discard the gesture
-                if (Vector3.Distance(fingerRelativePos, savedGestures[i].positionsPerFinger[j]) > theresold)
+                if (Vector3.Distance(fingerRelativePos, savedGestureAssets[i].FingerPositions[j]) > theresold)
                 {
                     discardGesture = true;
                     break;
                 }
 
                 // If all the fingers entered, then we calculate the total of their distances
-                sumDistances += Vector3.Distance(fingerRelativePos, savedGestures[i].positionsPerFinger[j]);
+                sumDistances += Vector3.Distance(fingerRelativePos, savedGestureAssets[i].FingerPositions[j]);
             }
 
             // If we have to discard the gesture, we skip it
@@ -224,7 +215,7 @@ public class GestureRecognizer : MonoBehaviour
             if (sumDistances < minSumDistances)
             {
                 minSumDistances = sumDistances;
-                bestCandidate = savedGestures[i];
+                bestCandidate = savedGestureAssets[i];
             }
         }
 
@@ -250,9 +241,6 @@ public class CustomInspector_GestureRecognizer : Editor
             myScript.SaveAsGesture();
             OnInspectorGUI();
         }
-
-
-
     }
 }
 #endif

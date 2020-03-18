@@ -786,18 +786,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   savedGestures: []
+  savedGestureAssets:
+  - {fileID: 11400000, guid: cfea060c326cf4b4e864f676bc2868e0, type: 2}
+  - {fileID: 11400000, guid: 2ccb1cebe73520346961abd0a8acb824, type: 2}
+  - {fileID: 11400000, guid: d0aeed5714928ba4d8b814f8b9cead9c, type: 2}
+  - {fileID: 11400000, guid: 69a0cbe3cf3148d4da323c11297c109c, type: 2}
   theresold: 1
   spherePrefab: {fileID: 2579277104790915968, guid: e8f528eec3dbc674dbc2fb1fa044c9b2,
     type: 3}
   onNothindDetected:
     m_PersistentCalls:
       m_Calls: []
-  gestureDetected:
-    gestureName: 
-    positionsPerFinger: []
-    onRecognized:
-      m_PersistentCalls:
-        m_Calls: []
+  gestureDetected: {fileID: 0}
   skeleton: {fileID: 0}
   fingerBones: []
   hand: {fileID: 0}
