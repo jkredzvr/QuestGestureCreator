@@ -5,6 +5,7 @@ using UnityEngine.Events;
 using System;
 using OculusSampleFramework;
 using System.Linq;
+using System.Threading.Tasks;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -223,6 +224,33 @@ public class GestureRecognizer : MonoBehaviour
         return bestCandidate;
     }
 
+    public static async Task SaveHandGesture(OVRSkeleton handSkeleton, Action<GestureScriptableAsset> callback)
+    {
+        Vector3 fingerRelativePos;
+       
+        int numBones = handSkeleton.Bones.Count;
+        Debug.Log("num bones " + numBones);
+        List<OVRBone> fingerBones = new List<OVRBone>(handSkeleton.Bones);
+
+        Debug.Log("[Bones]");
+        List<Vector3> positions = new List<Vector3>();
+        foreach (OVRBone bone in fingerBones)
+        {
+            fingerRelativePos = handSkeleton.transform.InverseTransformPoint(bone.Transform.position);
+            positions.Add(fingerRelativePos);
+
+            Debug.Log("[Bones] " + fingerRelativePos);
+        }
+
+        GestureScriptableAsset gestureScriptableAsset = ScriptableObjectUtility.CreateAsset<GestureScriptableAsset>();
+        gestureScriptableAsset.Name = "";
+        gestureScriptableAsset.Hand = GestureScriptableAsset.Handiness.Right;
+        gestureScriptableAsset.FingerPositions = positions;
+
+
+
+        callback.Invoke(gestureScriptableAsset);
+    }
 }
 
 #if UNITY_EDITOR
